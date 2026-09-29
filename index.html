@@ -2809,6 +2809,11 @@
       flex: none;
     }
 
+    /* form login selalu di atas panel (dipakai saat sesi habis) */
+    #admLoginOverlay {
+      z-index: 8100;
+    }
+
     .admTabs {
       flex: 0 0 auto;
       min-height: 52px;
@@ -9382,12 +9387,22 @@
       /* Aksi baca-saja punya jalur cadangan lewat GET (JSONP),
          dipakai bila POST ditolak Google (mis. HTTP 404). */
       const AKSI_BACA = ['adminList', 'adminOrders'];
+      const BATAS_WAKTU_MS = 30000;   /* batas tunggu login & aksi baca */
+
+      /* Sesi habis: minta login ulang tanpa menutup panel,
+         supaya isian form yang sedang dibuka tidak hilang. */
+      function tampilLoginUlang() {
+        hapusToken();
+        $('admLoginError').textContent = 'Sesi habis, silakan login lagi.';
+        $('admPass').value = '';
+        $('admLoginOverlay').classList.remove('hidden');
+        $('admUser').focus();
+      }
 
       function prosesBalasan(json) {
         if (!json || !json.ok) {
           if (json && json.code === 'AUTH') {
-            hapusToken();
-            $('admPanelOverlay').classList.add('hidden');
+            tampilLoginUlang();
           }
           throw new Error((json && json.message) || 'Permintaan gagal.');
         }
@@ -9401,10 +9416,23 @@
         body.set('payload', JSON.stringify(data || {}));
 
         let res = null;
+        let waktuHabis = false;
+        const pakaiBatas = action === 'adminLogin' || AKSI_BACA.indexOf(action) !== -1;
+        const kontrol = pakaiBatas && typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timer = kontrol
+          ? setTimeout(function () { waktuHabis = true; kontrol.abort(); }, BATAS_WAKTU_MS)
+          : null;
+
         try {
-          res = await fetch(API_URL, { method: 'POST', body: body });
+          res = await fetch(API_URL, {
+            method: 'POST',
+            body: body,
+            signal: kontrol ? kontrol.signal : undefined
+          });
         } catch (e) {
           res = null;
+        } finally {
+          if (timer) clearTimeout(timer);
         }
 
         if ((!res || !res.ok) && token && AKSI_BACA.indexOf(action) !== -1) {
@@ -9419,7 +9447,11 @@
           }
         }
 
-        if (!res) throw new Error('Tidak bisa terhubung ke server. Cek internet dan pengaturan akses Web App.');
+        if (!res) {
+          throw new Error(waktuHabis
+            ? 'Server terlalu lama merespons (bisa jadi sedang bangun). Coba lagi sebentar.'
+            : 'Tidak bisa terhubung ke server. Cek internet dan pengaturan akses Web App.');
+        }
         if (!res.ok) throw new Error('Server menolak permintaan (kode HTTP ' + res.status + ').');
 
         const teks = await res.text(); let json; try { json = JSON.parse(teks); } catch (e) { throw new Error('Balasan server bukan JSON. Kemungkinan ada error di Apps Script, cek menu Executions.'); }
@@ -9447,6 +9479,8 @@
       window.admTutupLogin = function () {
         $('admLoginOverlay').classList.add('hidden');
         $('admPass').value = '';
+        /* batal login saat sesi habis: panel tidak bisa dipakai tanpa token */
+        if (!token) $('admPanelOverlay').classList.add('hidden');
       };
 
       window.admLogin = async function () {
@@ -9460,16 +9494,30 @@
         btn.disabled = true;
         btn.textContent = 'Memeriksa...';
         $('admLoginError').textContent = '';
+        const pengingat = setTimeout(function () {
+          btn.textContent = 'Menunggu server...';
+          $('admLoginError').textContent = 'Server sedang bangun, mohon tunggu sebentar.';
+        }, 6000);
         try {
           const hasil = await kirim('adminLogin', { user: user, pass: pass });
           token = hasil.token;
           try { sessionStorage.setItem(KUNCI_TOKEN, token); } catch (e) {}
           $('admPass').value = '';
+          const panelTerbuka = !$('admPanelOverlay').classList.contains('hidden');
           admTutupLogin();
-          bukaPanel();
+          if (!panelTerbuka) {
+            bukaPanel();
+          } else if (!$('admViewOrders').classList.contains('hidden')) {
+            admMuatPesanan();
+          } else if (!$('admViewList').classList.contains('hidden')) {
+            bukaPanel();
+          } else {
+            toast('Login berhasil. Silakan tekan Simpan lagi.', 'success');
+          }
         } catch (err) {
           $('admLoginError').textContent = err.message;
         } finally {
+          clearTimeout(pengingat);
           btn.disabled = false;
           btn.textContent = 'Masuk';
         }
@@ -9490,18 +9538,14 @@
       async function bukaPanel() {
         $('admPanelOverlay').classList.remove('hidden');
         admKeList();
-        $('admList').innerHTML = '<p style="color:var(--muted)">Memuat produk...</p>';
+        $('admList').innerHTML = '<p style="color:var(--muted)">Memuat produk... (jika server baru bangun, bisa sampai 10-20 detik)</p>';
         try {
           const hasil = await kirim('adminList', {});
           daftar = (hasil.produk || []).map(function (x) { const pr = normalisasiProduk(x); pr.row = x._ROW || 0; pr.tab = x._TAB || ''; return pr; }); admIsiKategori();
           admRenderList();
         } catch (err) {
           $('admList').innerHTML = '';
-          if (!token) {
-            toast('Sesi habis, silakan login lagi.', 'error');
-          } else {
-            toast(err.message, 'error');
-          }
+          if (token) toast(err.message, 'error');
         }
       }
 
@@ -9592,7 +9636,7 @@
 
       window.admMuatPesanan = async function () {
         $('admPesananList').innerHTML =
-          '<p style="color:var(--muted)">Memuat pesanan...</p>';
+          '<p style="color:var(--muted)">Memuat pesanan... (jika server baru bangun, bisa sampai 10-20 detik)</p>';
         try {
           const hasil = await kirim('adminOrders', {});
           pesananDaftar = hasil.pesanan || [];
@@ -9603,7 +9647,7 @@
         } catch (err) {
           $('admPesananList').innerHTML = '';
           $('admRingkas').innerHTML = '';
-          toast(err.message, 'error');
+          if (token) toast(err.message, 'error');
         }
       };
 
