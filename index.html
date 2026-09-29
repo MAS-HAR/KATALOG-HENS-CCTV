@@ -4510,6 +4510,9 @@
         prosesDataServer(data);
 
 
+        tandaDataTerakhir = hitungTandaData(data);
+
+
         tampilkanToast(
           'Katalog berhasil dimuat.',
           'success'
@@ -7380,7 +7383,7 @@
       /* Update stok di katalog tanpa mengganggu halaman konfirmasi. */
 
       setTimeout(
-        () => loadData(),
+        () => muatUlangSenyap(true),
         800
       );
 
@@ -8250,6 +8253,192 @@
       }, { passive: true });
 
     })();
+
+  </script>
+
+
+  <script>
+
+    /* =====================================================
+       REFRESH OTOMATIS DATA PRODUK
+
+       Data (stok, terjual, harga, dll.) diambil ulang di
+       latar belakang tanpa memuat ulang halaman, sehingga
+       keranjang, form, dan posisi scroll tidak terganggu.
+
+       Ubah angka di bawah untuk mengatur selang waktu.
+    ===================================================== */
+
+    const INTERVAL_REFRESH_DETIK = 30;
+
+    let tandaDataTerakhir = null;
+
+    let sedangRefresh = false;
+
+    let waktuRefreshTerakhir = Date.now();
+
+
+    function hitungTandaData(data) {
+
+      try {
+
+        return JSON.stringify([
+          data.produk ?? data.products ?? data.PRODUK ?? [],
+          data.pengaturan ?? data.settings ?? data.PENGATURAN ?? {}
+        ]);
+
+      } catch (error) {
+
+        return String(Date.now());
+
+      }
+
+    }
+
+
+    function sinkronStokKeranjang() {
+
+      keranjang.forEach(
+        item => {
+
+          const produk =
+            semuaProduk.find(
+              p => String(p.id) === String(item.id)
+            );
+
+          if (produk) {
+            item.stok = produk.stok;
+          }
+
+        }
+      );
+
+    }
+
+
+    async function muatUlangSenyap(paksa) {
+
+      if (sedangRefresh) {
+        return;
+      }
+
+      if (!paksa) {
+
+        /* Tab tidak sedang dilihat */
+        if (document.hidden) {
+          return;
+        }
+
+        /* Sedang ada popup terbuka (detail / keranjang / form) */
+        if (document.querySelector('.modal:not(.hidden)')) {
+          return;
+        }
+
+        /* Pemuatan awal belum selesai */
+        const loading =
+          document.getElementById('loadingScreen');
+
+        if (
+          loading &&
+          !loading.classList.contains('hidden')
+        ) {
+          return;
+        }
+
+      }
+
+      sedangRefresh = true;
+
+      try {
+
+        const data =
+          await requestJsonp(
+            { action: 'getData' },
+            20000
+          );
+
+        if (
+          !data ||
+          data.ok !== true
+        ) {
+          return;
+        }
+
+        waktuRefreshTerakhir = Date.now();
+
+        const tanda =
+          hitungTandaData(data);
+
+        /* Tidak ada perubahan: tidak perlu menggambar ulang */
+        if (tanda === tandaDataTerakhir) {
+          return;
+        }
+
+        tandaDataTerakhir = tanda;
+
+        const posisiY =
+          window.scrollY;
+
+        const kategori =
+          document.getElementById('categories');
+
+        const posisiKategori =
+          kategori ? kategori.scrollLeft : 0;
+
+        prosesDataServer(data);
+
+        sinkronStokKeranjang();
+
+        if (kategori) {
+          kategori.scrollLeft = posisiKategori;
+        }
+
+        window.scrollTo({
+          top: posisiY,
+          behavior: 'instant'
+        });
+
+      } catch (error) {
+
+        /* Gagal diam-diam: data lama tetap dipakai */
+        console.warn(
+          'Refresh otomatis gagal:',
+          error
+        );
+
+      } finally {
+
+        sedangRefresh = false;
+
+      }
+
+    }
+
+
+    setInterval(
+      muatUlangSenyap,
+      INTERVAL_REFRESH_DETIK * 1000
+    );
+
+
+    /* Saat tab dibuka kembali, langsung segarkan jika sudah lama */
+
+    document.addEventListener(
+      'visibilitychange',
+      function () {
+
+        if (
+          !document.hidden &&
+          Date.now() - waktuRefreshTerakhir >
+          INTERVAL_REFRESH_DETIK * 1000
+        ) {
+
+          muatUlangSenyap();
+
+        }
+
+      }
+    );
 
   </script>
 
