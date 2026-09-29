@@ -15,7 +15,7 @@
     content="#07111f"
   >
 
-  <title>Katalog CCTV</title>
+  <title>HENSDA CCTV</title>
 
   <link
     rel="icon"
@@ -2982,15 +2982,22 @@
     /* ===== keterangan jumlah terjual (gaya Shopee) ===== */
 
     .soldInfo {
-      margin: -2px 0 7px;
+      margin-left: auto;
       color: var(--muted);
       font-size: 12px;
+      font-weight: 400;
       line-height: 1.3;
+      white-space: nowrap;
     }
 
-    .detailPrice + .soldInfo,
+    .detailPrice {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 2px 8px;
+    }
+
     .detailPrice .soldInfo {
-      margin: 6px 0 0;
       font-size: 13px;
     }
 
@@ -5675,9 +5682,9 @@
         return '';
       }
 
-      return '<div class="soldInfo">Terjual ' +
+      return '<div class="soldInfo">' +
         formatTerjual(produk.terjual) +
-        '</div>';
+        ' terjual</div>';
 
     }
 
@@ -5969,9 +5976,9 @@
 
             ${coretHtml}
 
-          </div>
-
             ${terjualHtml(produk)}
+
+          </div>
 
 
             <div
@@ -6158,10 +6165,9 @@
 
               ${hargaCoretHtml(produk)}
 
+              ${terjualHtml(produk)}
 
             </div>
-
-            ${terjualHtml(produk)}
 
 
             <div
