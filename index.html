@@ -2545,6 +2545,458 @@
 
 
 
+  
+    /* =====================================================
+       PANEL PENGATURAN ADMIN
+    ===================================================== */
+
+    .admGear {
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--muted);
+      font-size: 19px;
+      line-height: 1;
+      margin-right: 8px;
+    }
+
+    .admGear:hover {
+      color: var(--gold);
+      border-color: var(--gold);
+    }
+
+    .admOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 8000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      background: rgba(3, 8, 16, 0.78);
+    }
+
+    .admBox {
+      width: min(640px, 100%);
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      background: var(--bg2);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .admBox.small {
+      width: min(400px, 100%);
+    }
+
+    .admHead {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .admHead strong {
+      font-size: 17px;
+    }
+
+    .admBody {
+      padding: 16px 18px 20px;
+      overflow-y: auto;
+    }
+
+    .admField {
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    .admField span {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .admField input,
+    .admField select {
+      width: 100%;
+      padding: 12px 14px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      outline: none;
+    }
+
+    .admField input:focus {
+      border-color: var(--gold);
+    }
+
+    .admRow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .admBtn {
+      padding: 11px 16px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card2);
+      font-weight: 700;
+    }
+
+    .admBtn.primary {
+      color: #1b1500;
+      border-color: var(--gold);
+      background: var(--gold);
+    }
+
+    .admBtn:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .admActions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .admError {
+      min-height: 18px;
+      margin: 0 0 10px;
+      color: var(--red);
+      font-size: 13px;
+    }
+
+    .admTools {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .admTools input {
+      flex: 1;
+      min-width: 0;
+      padding: 11px 14px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      outline: none;
+    }
+
+    .admItem {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+    }
+
+    .admItem img {
+      width: 52px;
+      height: 52px;
+      flex: none;
+      object-fit: cover;
+      border-radius: 10px;
+      background: var(--card2);
+    }
+
+    .admItemInfo {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .admItemInfo b {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 14px;
+    }
+
+    .admItemInfo small {
+      color: var(--muted);
+    }
+
+    .admStok {
+      flex: none;
+      font-size: 13px;
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .admStok.habis {
+      color: var(--red);
+    }
+
+    .admStepper {
+      display: flex;
+      gap: 8px;
+    }
+
+    .admStepper input {
+      text-align: center;
+    }
+
+    .admStepper button {
+      width: 46px;
+      flex: none;
+      font-size: 20px;
+    }
+
+    .admPreview {
+      width: 140px;
+      height: 105px;
+      margin-top: 10px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card2);
+    }
+
+  
+    .admChips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 6px;
+    }
+
+    .admChip {
+      flex: none;
+      padding: 8px 14px;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--card);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .admChip small {
+      margin-left: 6px;
+      opacity: 0.75;
+    }
+
+    .admChip.active {
+      color: #1b1500;
+      border-color: var(--gold);
+      background: var(--gold);
+    }
+
+    /* ----- tab Produk / Cek Pesanan ----- */
+    .admHead {
+      flex: none;
+    }
+
+    .admTabs {
+      flex: 0 0 auto;
+      min-height: 52px;
+      align-items: flex-end;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 12px 18px 0;
+      margin: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .admTabs .admChip {
+      padding: 11px 18px;
+      border-radius: 12px 12px 0 0;
+      border-bottom: 0;
+      font-size: 14px;
+    }
+
+    .admField textarea {
+      width: 100%;
+      min-height: 84px;
+      padding: 12px 14px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      outline: none;
+      resize: vertical;
+      font: inherit;
+    }
+
+    .admField textarea:focus {
+      border-color: var(--gold);
+    }
+
+    /* ----- cek pesanan ----- */
+    .admRingkas {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .admRingkas div {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+    }
+
+    .admRingkas b {
+      display: block;
+      font-size: 15px;
+      color: var(--gold);
+    }
+
+    .admRingkas small {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .admOrder {
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      font-size: 13px;
+    }
+
+    .admOrderTop {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .admOrderTop b {
+      font-size: 14px;
+    }
+
+    .admOrderTop small,
+    .admOrder .admMuted {
+      color: var(--muted);
+    }
+
+    .admOrder p {
+      margin: 4px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .admOrder pre {
+      margin: 8px 0;
+      padding: 8px 10px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: inherit;
+      border-radius: 10px;
+      background: var(--card2);
+    }
+
+    .admOrderTotal {
+      text-align: right;
+      font-weight: 800;
+      color: var(--gold);
+    }
+
+    .admOrder a {
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .admOrderStatus {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+    }
+
+    .admBadge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .admBadge.belum {
+      color: var(--red);
+      background: rgba(255, 90, 90, 0.12);
+    }
+
+    .admBadge.sudah {
+      color: var(--green);
+      background: rgba(46, 204, 113, 0.14);
+    }
+
+    .admOrderStatus .admBtn {
+      padding: 8px 12px;
+      font-size: 12px;
+    }
+
+    .admTanggal {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .admTanggal select {
+      flex: 1;
+      min-width: 92px;
+      padding: 10px 12px;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      outline: none;
+    }
+
+    .admTanggal select option {
+      color: var(--text);
+      background: var(--bg2);
+    }
+
+    .admTanggal .admBtn {
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+
+    .admInfoHasil {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .admNote {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 12px;
+    }
   </style>
 
 
@@ -3088,6 +3540,7 @@
 
       <div class="headerActions">
 
+        <button type="button" class="admGear" title="Pengaturan" aria-label="Pengaturan" onclick="admBukaPengaturan()">⚙</button>
         <button
           type="button"
           class="cartButton"
@@ -8781,6 +9234,693 @@
       }
     );
 
+  </script>
+
+
+  <!-- =====================================================
+       PANEL PENGATURAN ADMIN (WAJIB LOGIN)
+  ====================================================== -->
+
+  <div id="admLoginOverlay" class="admOverlay hidden">
+    <div class="admBox small">
+      <div class="admHead">
+        <strong>Masuk Pengaturan</strong>
+        <button type="button" class="admBtn" onclick="admTutupLogin()">✕</button>
+      </div>
+      <div class="admBody">
+        <label class="admField">
+          <span>Username</span>
+          <input id="admUser" type="text" autocomplete="username" autocapitalize="off">
+        </label>
+        <label class="admField">
+          <span>Password</span>
+          <input id="admPass" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')admLogin()">
+        </label>
+        <p id="admLoginError" class="admError"></p>
+        <div class="admActions">
+          <button id="admLoginBtn" type="button" class="admBtn primary" onclick="admLogin()">Masuk</button>
+          <button type="button" class="admBtn" onclick="admTutupLogin()">Batal</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="admPanelOverlay" class="admOverlay hidden">
+    <div class="admBox">
+      <div class="admHead">
+        <strong id="admJudul">Pengaturan Produk</strong>
+        <div class="admActions" style="margin:0">
+          <button type="button" class="admBtn" onclick="admKeluar()">Keluar</button>
+          <button type="button" class="admBtn" onclick="admTutupPanel()">✕</button>
+        </div>
+      </div>
+
+      <div id="admTabs" class="admChips admTabs">
+        <button id="admTabProduk" type="button" class="admChip active" onclick="admTab('produk')">Produk</button>
+        <button id="admTabPesanan" type="button" class="admChip" onclick="admTab('pesanan')">Cek Pesanan</button>
+      </div>
+
+      <div id="admViewOrders" class="admBody hidden">
+        <div class="admTools">
+          <input id="admCariPesanan" type="search" placeholder="Cari nama, no. pesanan, WhatsApp..." oninput="admRenderPesanan()">
+          <button type="button" class="admBtn" onclick="admMuatPesanan()">Muat ulang</button>
+        </div>
+        <div class="admTanggal">
+          <select id="admFTanggal" aria-label="Tanggal" onchange="admRenderPesanan()"><option value="">Tanggal</option><option value="01">1</option><option value="02">2</option><option value="03">3</option><option value="04">4</option><option value="05">5</option><option value="06">6</option><option value="07">7</option><option value="08">8</option><option value="09">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option><option value="24">24</option><option value="25">25</option><option value="26">26</option><option value="27">27</option><option value="28">28</option><option value="29">29</option><option value="30">30</option><option value="31">31</option></select>
+          <select id="admFBulan" aria-label="Bulan" onchange="admRenderPesanan()"><option value="">Bulan</option><option value="01">Januari</option><option value="02">Februari</option><option value="03">Maret</option><option value="04">April</option><option value="05">Mei</option><option value="06">Juni</option><option value="07">Juli</option><option value="08">Agustus</option><option value="09">September</option><option value="10">Oktober</option><option value="11">November</option><option value="12">Desember</option></select>
+          <select id="admFTahun" aria-label="Tahun" onchange="admRenderPesanan()"><option value="">Tahun</option></select>
+          <button type="button" class="admBtn" onclick="admResetTanggal()">Reset tanggal</button>
+        </div>
+        <div id="admRingkas" class="admRingkas"></div>
+        <div id="admFilterPesanan" class="admChips"></div>
+        <p id="admHasilInfo" class="admInfoHasil"></p>
+        <div id="admPesananList"></div>
+      </div>
+
+      <div id="admViewList" class="admBody">
+        <div class="admTools">
+          <input id="admCari" type="search" placeholder="Cari produk..." oninput="admRenderList()">
+          <button type="button" class="admBtn primary" onclick="admBuka('')">+ Produk</button>
+        </div>
+        <div id="admChips" class="admChips"></div>
+        <div id="admList"></div>
+      </div>
+
+      <div id="admViewForm" class="admBody hidden">
+        <label class="admField">
+          <span>Nama produk</span>
+          <input id="admNama" type="text" maxlength="150">
+        </label>
+        <label class="admField">
+          <span>Jenis / kategori (produk baru: pilih yang ada atau ketik jenis baru)</span>
+          <input id="admKategori" type="text" list="admKategoriList" maxlength="60">
+          <datalist id="admKategoriList"></datalist>
+        </label>
+        <div class="admRow">
+          <label class="admField">
+            <span>Harga (Rp)</span>
+            <input id="admHarga" type="number" min="0" step="1" inputmode="numeric">
+          </label>
+          <div class="admField">
+            <span>Jumlah stok</span>
+            <div class="admStepper">
+              <button type="button" class="admBtn" onclick="admUbahStok(-1)">−</button>
+              <input id="admStok" type="number" min="0" step="1" inputmode="numeric">
+              <button type="button" class="admBtn" onclick="admUbahStok(1)">+</button>
+            </div>
+          </div>
+        </div>
+        <label class="admField">
+          <span>Spesifikasi</span>
+          <textarea id="admSpesifikasi" rows="4" maxlength="2000" placeholder="Contoh: 2MP, Full Color, IP66, lensa 3.6mm"></textarea>
+        </label>
+        <label class="admField">
+          <span>Deskripsi</span>
+          <textarea id="admDeskripsi" rows="4" maxlength="3000" placeholder="Keterangan produk untuk pembeli"></textarea>
+        </label>
+        <label class="admField">
+          <span>Foto produk (kosongkan jika tidak ingin mengganti)</span>
+          <input id="admFoto" type="file" accept="image/*" onchange="admPilihFoto(this)">
+          <img id="admPreview" class="admPreview hidden" alt="Pratinjau foto">
+        </label>
+        <p id="admFormError" class="admError"></p>
+        <div class="admActions">
+          <button id="admSimpanBtn" type="button" class="admBtn primary" onclick="admSimpan()">Simpan</button>
+          <button type="button" class="admBtn" onclick="admKeList()">Kembali</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* =====================================================
+       PANEL PENGATURAN ADMIN
+       Login diperiksa di server (Apps Script), bukan di
+       halaman ini. Halaman hanya menyimpan token sesi.
+    ===================================================== */
+    (function () {
+
+      const KUNCI_TOKEN = 'hensdaAdminToken';
+      let token = '';
+      let daftar = [];
+      let editId = ''; let editRow = 0; let editTab = ''; let katAktif = 'SEMUA'; let katList = [];
+      let fotoBaru = '';
+      let sedangKirim = false;
+
+      try {
+        token = sessionStorage.getItem(KUNCI_TOKEN) || '';
+      } catch (e) {}
+
+      const $ = id => document.getElementById(id);
+
+      function toast(pesan, tipe) {
+        if (typeof tampilkanToast === 'function') {
+          tampilkanToast(pesan, tipe);
+        }
+      }
+
+      /* Aksi baca-saja punya jalur cadangan lewat GET (JSONP),
+         dipakai bila POST ditolak Google (mis. HTTP 404). */
+      const AKSI_BACA = ['adminList', 'adminOrders'];
+
+      function prosesBalasan(json) {
+        if (!json || !json.ok) {
+          if (json && json.code === 'AUTH') {
+            hapusToken();
+            $('admPanelOverlay').classList.add('hidden');
+          }
+          throw new Error((json && json.message) || 'Permintaan gagal.');
+        }
+        return json;
+      }
+
+      async function kirim(action, data) {
+        const body = new URLSearchParams();
+        body.set('action', action);
+        if (token) body.set('token', token);
+        body.set('payload', JSON.stringify(data || {}));
+
+        let res = null;
+        try {
+          res = await fetch(API_URL, { method: 'POST', body: body });
+        } catch (e) {
+          res = null;
+        }
+
+        if ((!res || !res.ok) && token && AKSI_BACA.indexOf(action) !== -1) {
+          try {
+            const cadangan = await requestJsonp({ action: action, token: token });
+            return prosesBalasan(cadangan);
+          } catch (e) {
+            if (e && e.message && e.message.indexOf('Server') !== 0 &&
+                e.message.indexOf('Tidak dapat') !== 0) {
+              throw e;   /* balasan server yang sah (mis. sesi habis) */
+            }
+          }
+        }
+
+        if (!res) throw new Error('Tidak bisa terhubung ke server. Cek internet dan pengaturan akses Web App.');
+        if (!res.ok) throw new Error('Server menolak permintaan (kode HTTP ' + res.status + ').');
+
+        const teks = await res.text(); let json; try { json = JSON.parse(teks); } catch (e) { throw new Error('Balasan server bukan JSON. Kemungkinan ada error di Apps Script, cek menu Executions.'); }
+        return prosesBalasan(json);
+      }
+
+      function hapusToken() {
+        token = '';
+        try { sessionStorage.removeItem(KUNCI_TOKEN); } catch (e) {}
+      }
+
+      /* ---------- Login ---------- */
+
+      window.admBukaPengaturan = function () {
+        if (token) {
+          bukaPanel();
+          return;
+        }
+        $('admLoginError').textContent = '';
+        $('admPass').value = '';
+        $('admLoginOverlay').classList.remove('hidden');
+        $('admUser').focus();
+      };
+
+      window.admTutupLogin = function () {
+        $('admLoginOverlay').classList.add('hidden');
+        $('admPass').value = '';
+      };
+
+      window.admLogin = async function () {
+        const user = $('admUser').value.trim();
+        const pass = $('admPass').value;
+        if (!user || !pass) {
+          $('admLoginError').textContent = 'Isi username dan password.';
+          return;
+        }
+        const btn = $('admLoginBtn');
+        btn.disabled = true;
+        btn.textContent = 'Memeriksa...';
+        $('admLoginError').textContent = '';
+        try {
+          const hasil = await kirim('adminLogin', { user: user, pass: pass });
+          token = hasil.token;
+          try { sessionStorage.setItem(KUNCI_TOKEN, token); } catch (e) {}
+          $('admPass').value = '';
+          admTutupLogin();
+          bukaPanel();
+        } catch (err) {
+          $('admLoginError').textContent = err.message;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Masuk';
+        }
+      };
+
+      window.admKeluar = function () {
+        hapusToken();
+        $('admPanelOverlay').classList.add('hidden');
+        toast('Anda sudah keluar dari pengaturan.', 'success');
+      };
+
+      window.admTutupPanel = function () {
+        $('admPanelOverlay').classList.add('hidden');
+      };
+
+      /* ---------- Daftar produk ---------- */
+
+      async function bukaPanel() {
+        $('admPanelOverlay').classList.remove('hidden');
+        admKeList();
+        $('admList').innerHTML = '<p style="color:var(--muted)">Memuat produk...</p>';
+        try {
+          const hasil = await kirim('adminList', {});
+          daftar = (hasil.produk || []).map(function (x) { const pr = normalisasiProduk(x); pr.row = x._ROW || 0; pr.tab = x._TAB || ''; return pr; }); admIsiKategori();
+          admRenderList();
+        } catch (err) {
+          $('admList').innerHTML = '';
+          if (!token) {
+            toast('Sesi habis, silakan login lagi.', 'error');
+          } else {
+            toast(err.message, 'error');
+          }
+        }
+      }
+
+      window.admRenderList = function () {
+        const q = $('admCari').value.trim().toLowerCase();
+        const tampil = daftar.filter(p =>
+          (katAktif === 'SEMUA' || String(p.kategori) === katAktif) &&
+          (!q ||
+            String(p.nama).toLowerCase().includes(q) ||
+            String(p.kategori).toLowerCase().includes(q) ||
+            String(p.id).toLowerCase().includes(q))
+        );
+
+        if (!tampil.length) {
+          $('admList').innerHTML =
+            '<p style="color:var(--muted)">Produk tidak ditemukan.</p>';
+          return;
+        }
+
+        $('admList').innerHTML = tampil.map(p => `
+          <div class="admItem">
+            <img src="${escapeHtml(urlFotoProduk(p))}" alt="" loading="lazy"
+              onerror="this.src='${FOTO_PLACEHOLDER_KECIL}'">
+            <div class="admItemInfo">
+              <b>${escapeHtml(p.nama)}</b>
+              <small>${escapeHtml(p.kategori)} · ${escapeHtml(formatRupiah(p.harga))}</small>
+            </div>
+            <div class="admStok ${p.stok <= 0 ? 'habis' : ''}">Stok ${p.stok}</div>
+            <button type="button" class="admBtn" onclick="admBuka('${escapeHtml(p.id)}')">Edit</button>
+          </div>
+        `).join('');
+      };
+
+      function admIsiKategori() {
+        const hitung = {};
+        daftar.forEach(p => {
+          const k = String(p.kategori || 'LAINNYA');
+          hitung[k] = (hitung[k] || 0) + 1;
+        });
+        katList = Object.keys(hitung).sort((a, b) => a.localeCompare(b, 'id'));
+        if (katAktif !== 'SEMUA' && katList.indexOf(katAktif) === -1) {
+          katAktif = 'SEMUA';
+        }
+        $('admChips').innerHTML =
+          '<button type="button" class="admChip' + (katAktif === 'SEMUA' ? ' active' : '') +
+          '" onclick="admPilihKat(-1)">Semua<small>' + daftar.length + '</small></button>' +
+          katList.map((k, i) =>
+            '<button type="button" class="admChip' + (katAktif === k ? ' active' : '') +
+            '" onclick="admPilihKat(' + i + ')">' + escapeHtml(k) +
+            '<small>' + hitung[k] + '</small></button>'
+          ).join('');
+      }
+
+      window.admPilihKat = function (i) {
+        katAktif = i < 0 ? 'SEMUA' : katList[i];
+        admIsiKategori();
+        admRenderList();
+      };
+
+      window.admKeList = function () {
+        $('admViewForm').classList.add('hidden');
+        $('admViewOrders').classList.add('hidden');
+        $('admViewList').classList.remove('hidden');
+        $('admTabs').classList.remove('hidden');
+        $('admTabProduk').classList.add('active');
+        $('admTabPesanan').classList.remove('active');
+        $('admJudul').textContent = 'Pengaturan Produk';
+      };
+
+      /* ---------- Cek pesanan ---------- */
+
+      let pesananDaftar = [];
+      let pesananJumlah = 0;
+
+      window.admTab = function (nama) {
+        if (nama === 'pesanan') {
+          $('admViewList').classList.add('hidden');
+          $('admViewForm').classList.add('hidden');
+          $('admViewOrders').classList.remove('hidden');
+          $('admTabProduk').classList.remove('active');
+          $('admTabPesanan').classList.add('active');
+          $('admJudul').textContent = 'Pesanan Masuk';
+          admMuatPesanan();
+        } else {
+          admKeList();
+        }
+      };
+
+      window.admMuatPesanan = async function () {
+        $('admPesananList').innerHTML =
+          '<p style="color:var(--muted)">Memuat pesanan...</p>';
+        try {
+          const hasil = await kirim('adminOrders', {});
+          pesananDaftar = hasil.pesanan || [];
+          pesananJumlah = hasil.jumlah || pesananDaftar.length;
+          pesananAdaStatus = hasil.adaStatus !== false;
+          admIsiTahun();
+          admRenderPesanan();
+        } catch (err) {
+          $('admPesananList').innerHTML = '';
+          $('admRingkas').innerHTML = '';
+          toast(err.message, 'error');
+        }
+      };
+
+      function admNomorWa(nomor) {
+        let n = String(nomor || '').replace(/\D/g, '');
+        if (n.indexOf('0') === 0) n = '62' + n.slice(1);
+        return n;
+      }
+
+      let filterStatus = 'SEMUA';
+      let pesananAdaStatus = true;
+      let statusSibuk = false;
+      const STATUS_SUDAH = 'SUDAH DIPROSES';
+      const STATUS_BELUM = 'BELUM DIPROSES';
+
+      /* Pilihan tahun diambil dari data pesanan yang ada */
+      function admIsiTahun() {
+        const pilih = $('admFTahun');
+        const dipilih = pilih.value;
+        const tahun = Array.from(new Set(
+          pesananDaftar.map(p => String(p.TANGGAL || '').slice(0, 4)).filter(Boolean)
+        )).sort().reverse();
+        pilih.innerHTML = '<option value="">Tahun</option>' +
+          tahun.map(y => '<option value="' + y + '">' + y + '</option>').join('');
+        if (tahun.indexOf(dipilih) !== -1) pilih.value = dipilih;
+      }
+
+      window.admResetTanggal = function () {
+        $('admFTanggal').value = '';
+        $('admFBulan').value = '';
+        $('admFTahun').value = '';
+        admRenderPesanan();
+      };
+
+      window.admFilterStatus = function (nilai) {
+        filterStatus = nilai;
+        admRenderPesanan();
+      };
+
+      window.admRenderPesanan = function () {
+        const q = $('admCariPesanan').value.trim().toLowerCase();
+
+        const hariIni = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+        const pesananHariIni = pesananDaftar.filter(p => p.TANGGAL === hariIni);
+        const omzetHariIni = pesananHariIni.reduce((s, p) => s + (Number(p.TOTAL) || 0), 0);
+        const jmlSudah = pesananDaftar.filter(p => p.STATUS === STATUS_SUDAH).length;
+        const jmlBelum = pesananDaftar.length - jmlSudah;
+
+        $('admRingkas').innerHTML =
+          '<div><b>' + pesananHariIni.length + '</b><small>Pesanan hari ini</small></div>' +
+          '<div><b>' + escapeHtml(formatRupiah(omzetHariIni)) + '</b><small>Nilai hari ini</small></div>' +
+          '<div><b>' + jmlBelum + '</b><small>Belum diproses</small></div>' +
+          '<div><b>' + pesananJumlah + '</b><small>Total pesanan</small></div>';
+
+        $('admFilterPesanan').innerHTML = [
+          ['SEMUA', 'Semua', pesananDaftar.length],
+          ['BELUM', 'Belum diproses', jmlBelum],
+          ['SUDAH', 'Sudah diproses', jmlSudah]
+        ].map(f =>
+          '<button type="button" class="admChip' + (filterStatus === f[0] ? ' active' : '') +
+          '" onclick="admFilterStatus(\'' + f[0] + '\')">' + f[1] + '<small>' + f[2] + '</small></button>'
+        ).join('');
+
+        const fTanggal = $('admFTanggal').value;
+        const fBulan = $('admFBulan').value;
+        const fTahun = $('admFTahun').value;
+
+        const tampil = pesananDaftar.filter(p =>
+          (filterStatus === 'SEMUA' ||
+            (filterStatus === 'SUDAH' ? p.STATUS === STATUS_SUDAH : p.STATUS !== STATUS_SUDAH)) &&
+          (!fTahun || String(p.TANGGAL || '').slice(0, 4) === fTahun) &&
+          (!fBulan || String(p.TANGGAL || '').slice(5, 7) === fBulan) &&
+          (!fTanggal || String(p.TANGGAL || '').slice(8, 10) === fTanggal) &&
+          (!q ||
+            String(p.NO_PESANAN || '').toLowerCase().includes(q) ||
+            String(p.NAMA || '').toLowerCase().includes(q) ||
+            String(p.WHATSAPP || '').toLowerCase().includes(q) ||
+            String(p.ITEM || '').toLowerCase().includes(q))
+        );
+
+        const nilaiTampil = tampil.reduce((s, p) => s + (Number(p.TOTAL) || 0), 0);
+        $('admHasilInfo').textContent = pesananDaftar.length
+          ? 'Menampilkan ' + tampil.length + ' pesanan · Total ' + formatRupiah(nilaiTampil)
+          : '';
+
+        const catatanSetup = pesananAdaStatus ? '' :
+          '<p class="admNote">Kolom STATUS belum ada di sheet PESANAN. Jalankan fungsi SETUP di Code.gs, ' +
+          'lalu deploy ulang, agar status bisa diubah dari sini.</p>';
+
+        if (!tampil.length) {
+          $('admPesananList').innerHTML = catatanSetup +
+            '<p style="color:var(--muted)">' +
+            (pesananDaftar.length ? 'Tidak ada pesanan pada pilihan ini.' : 'Belum ada pesanan masuk.') +
+            '</p>';
+          return;
+        }
+
+        $('admPesananList').innerHTML = catatanSetup + tampil.map(p => {
+          const wa = admNomorWa(p.WHATSAPP);
+          const sudah = p.STATUS === STATUS_SUDAH;
+          return `
+            <div class="admOrder">
+              <div class="admOrderTop">
+                <b>${escapeHtml(p.NO_PESANAN || '-')}</b>
+                <small>${escapeHtml(p.WAKTU || '')}</small>
+              </div>
+              <p><b>${escapeHtml(p.NAMA || '-')}</b>
+                ${wa ? ' · <a href="https://wa.me/' + escapeHtml(wa) + '" target="_blank" rel="noopener">' + escapeHtml(p.WHATSAPP) + '</a>' : ''}</p>
+              ${p.ALAMAT ? '<p><span class="admMuted">Alamat:</span> ' + escapeHtml(p.ALAMAT) + '</p>' : ''}
+              ${p.CATATAN ? '<p><span class="admMuted">Catatan:</span> ' + escapeHtml(p.CATATAN) + '</p>' : ''}
+              <pre>${escapeHtml(p.ITEM || '')}</pre>
+              <div class="admOrderTotal">Total ${escapeHtml(formatRupiah(p.TOTAL))}</div>
+              <div class="admOrderStatus">
+                <span class="admBadge ${sudah ? 'sudah' : 'belum'}">${sudah ? '✓ Sudah diproses' : '● Belum diproses'}</span>
+                ${pesananAdaStatus ? `<button type="button" class="admBtn${sudah ? '' : ' primary'}"
+                  onclick="admUbahStatus('${escapeHtml(p.NO_PESANAN)}')">${sudah ? 'Tandai belum diproses' : 'Tandai sudah diproses'}</button>` : ''}
+              </div>
+            </div>`;
+        }).join('');
+      };
+
+      window.admUbahStatus = async function (no) {
+        const p = pesananDaftar.find(x => String(x.NO_PESANAN) === String(no));
+        if (!p || statusSibuk) return;
+
+        const target = p.STATUS === STATUS_SUDAH ? STATUS_BELUM : STATUS_SUDAH;
+        statusSibuk = true;
+
+        const kirimStatus = () => kirim('adminSetOrderStatus', { no: no, row: p._ROW, status: target });
+
+        try {
+          try {
+            await kirimStatus();
+          } catch (e) {
+            /* status ditulis eksplisit, jadi aman diulang sekali */
+            if (/^(Server menolak|Tidak bisa terhubung)/.test(e.message)) {
+              await kirimStatus();
+            } else {
+              throw e;
+            }
+          }
+          p.STATUS = target;
+          admRenderPesanan();
+          toast(target === STATUS_SUDAH ? 'Pesanan ditandai sudah diproses.' : 'Pesanan ditandai belum diproses.', 'success');
+        } catch (err) {
+          toast(err.message, 'error');
+        } finally {
+          statusSibuk = false;
+        }
+      };
+
+      /* ---------- Form tambah / edit ---------- */
+
+      window.admBuka = function (id) {
+        editId = id || '';
+        fotoBaru = '';
+        $('admFoto').value = '';
+        $('admFormError').textContent = '';
+
+        const kategori = Array.from(new Set(
+          daftar.map(p => p.kategori).filter(Boolean)
+        ));
+        $('admKategoriList').innerHTML =
+          kategori.map(k => '<option value="' + escapeHtml(k) + '"></option>').join('');
+
+        const p = daftar.find(x => String(x.id) === String(editId)); editRow = p ? (p.row || 0) : 0; editTab = p ? (p.tab || '') : '';
+        $('admNama').value = p ? p.nama : '';
+        $('admKategori').value = p ? p.kategori : ''; $('admKategori').disabled = !!p;
+        $('admHarga').value = p ? p.harga : '';
+        $('admStok').value = p ? p.stok : 0;
+        $('admSpesifikasi').value = p ? String(p.spesifikasi || '') : '';
+        $('admDeskripsi').value = p ? String(p.deskripsi || '') : '';
+
+        const prev = $('admPreview');
+        if (p) {
+          prev.src = urlFotoProduk(p);
+          prev.classList.remove('hidden');
+        } else {
+          prev.classList.add('hidden');
+        }
+
+        $('admJudul').textContent = p ? 'Edit Produk' : 'Tambah Produk';
+        $('admTabs').classList.add('hidden');
+        $('admViewList').classList.add('hidden');
+        $('admViewForm').classList.remove('hidden');
+      };
+
+      window.admUbahStok = function (n) {
+        const el = $('admStok');
+        el.value = Math.max(0, (parseInt(el.value, 10) || 0) + n);
+      };
+
+      /* Foto diperkecil dulu di browser supaya upload ringan */
+      window.admPilihFoto = function (input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        if (!/^image\//.test(file.type)) {
+          $('admFormError').textContent = 'File harus berupa gambar.';
+          input.value = '';
+          return;
+        }
+        const reader = new FileReader();
+        reader.onload = function () {
+          const img = new Image();
+          img.onload = function () {
+            const MAKS = 900;
+            const skala = Math.min(1, MAKS / Math.max(img.width, img.height));
+            const c = document.createElement('canvas');
+            c.width = Math.round(img.width * skala);
+            c.height = Math.round(img.height * skala);
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, c.width, c.height);
+            ctx.drawImage(img, 0, 0, c.width, c.height);
+            fotoBaru = c.toDataURL('image/jpeg', 0.8);
+            $('admPreview').src = fotoBaru;
+            $('admPreview').classList.remove('hidden');
+            $('admFormError').textContent = '';
+          };
+          img.onerror = function () {
+            $('admFormError').textContent = 'Gambar tidak bisa dibaca.';
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      };
+
+      window.admSimpan = async function () {
+        if (sedangKirim) return;
+
+        const nama = $('admNama').value.trim();
+        const kategori = $('admKategori').value.trim();
+        const harga = parseInt($('admHarga').value, 10);
+        const stok = parseInt($('admStok').value, 10);
+
+        if (!nama) return galat('Nama produk wajib diisi.');
+        if (!kategori) return galat('Jenis / kategori wajib diisi.');
+        if (isNaN(harga) || harga < 0) return galat('Harga tidak valid.');
+        if (isNaN(stok) || stok < 0) return galat('Stok tidak valid.');
+
+        sedangKirim = true;
+        const btn = $('admSimpanBtn');
+        btn.disabled = true;
+        btn.textContent = 'Menyimpan...';
+        $('admFormError').textContent = '';
+
+        try {
+          const hasilSimpan = await kirim('adminSaveProduct', {
+            id: editId, row: editRow, tab: editTab,
+            nama: nama,
+            kategori: kategori,
+            harga: harga,
+            stok: stok,
+            spesifikasi: $('admSpesifikasi').value.trim(),
+            deskripsi: $('admDeskripsi').value.trim(),
+            fotoBase64: fotoBaru
+          });
+          toast('Produk berhasil disimpan.' + (hasilSimpan && hasilSimpan.catatan ? ' ' + hasilSimpan.catatan : ''), 'success');
+          await bukaPanel();
+          segarkanKatalog(hasilSimpan, {
+            nama: nama, kategori: kategori, harga: harga, stok: stok,
+            spesifikasi: $('admSpesifikasi').value.trim(),
+            deskripsi: $('admDeskripsi').value.trim()
+          });
+        } catch (err) {
+          galat(err.message);
+        } finally {
+          sedangKirim = false;
+          btn.disabled = false;
+          btn.textContent = 'Simpan';
+        }
+      };
+
+      /* Terapkan perubahan langsung ke katalog di halaman ini */
+      function segarkanKatalog(hasil, p) {
+        const id = String((hasil && hasil.id) || editId || '');
+        try { localStorage.removeItem('katalog_cache_v1'); } catch (e) {}
+        try {
+          const foto = hasil && hasil.foto ? hasil.foto : '';
+          if (id) {
+            cacheFotoProduk.delete(id);
+            fotoSedangDimuat.delete(id);
+          }
+          let prod = semuaProduk.find(x => String(x.id) === id);
+          if (prod) {
+            prod.nama = p.nama;
+            prod.kategori = normalisasiKategori(p.kategori);
+            prod.harga = p.harga;
+            prod.stok = p.stok;
+            prod.spesifikasi = p.spesifikasi || '';
+            prod.deskripsi = p.deskripsi || '';
+            if (foto) prod.foto = foto;
+          } else if (id) {
+            prod = normalisasiProduk({
+              ID: id, KATEGORI: (hasil && hasil.kategori) || p.kategori, NAMA_PRODUK: p.nama,
+              HARGA: p.harga, STOK: p.stok, FOTO: foto, TERJUAL: 0,
+              SPESIFIKASI: p.spesifikasi || '', DESKRIPSI: p.deskripsi || ''
+            });
+            semuaProduk.push(prod);
+          }
+          if (prod && foto) {
+            cacheFotoProduk.set(id, foto);
+            tampilkanFotoPadaElemen(id, foto);
+          }
+          buatKategori();
+          terapkanFilter();
+        } catch (e) {
+          console.warn(e);
+        }
+        if (typeof muatUlangSenyap === 'function') muatUlangSenyap(true);
+      }
+
+      function galat(pesan) {
+        $('admFormError').textContent = pesan;
+      }
+
+    })();
   </script>
 
 </body>
