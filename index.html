@@ -3919,6 +3919,13 @@
       }
 
 
+      if (fotoDriveLangsungBisa(produk)) {
+
+        return urlDriveLangsung(produk.fotoId);
+
+      }
+
+
       return FOTO_PLACEHOLDER;
 
     }
@@ -4228,6 +4235,13 @@
           item.image_url ??
           '',
 
+        fotoId:
+          String(
+            item.FOTO_ID ??
+            item.foto_id ??
+            ''
+          ).trim(),
+
         terjual:
           Number(
             String(
@@ -4489,9 +4503,11 @@
 
 
         const data =
-          await requestJsonp({
-            action: 'getData'
-          });
+          await requestJsonpCoba(
+            { action: 'getData' },
+            20000,
+            3
+          );
 
 
         if (
@@ -4511,6 +4527,8 @@
 
 
         tandaDataTerakhir = hitungTandaData(data);
+
+        simpanCacheLokal(data);
 
 
         tampilkanToast(
@@ -5385,6 +5403,29 @@
 
       /*
         -----------------------------------------------------
+        2b. Foto langsung dari Google Drive (tanpa Apps Script)
+        -----------------------------------------------------
+      */
+
+      if (fotoDriveLangsungBisa(produk)) {
+
+        const urlLangsung =
+          urlDriveLangsung(produk.fotoId);
+
+
+        tampilkanFotoPadaElemen(
+          id,
+          urlLangsung
+        );
+
+
+        return urlLangsung;
+
+      }
+
+
+      /*
+        -----------------------------------------------------
         3. Jika foto sedang dimuat oleh request lain
         -----------------------------------------------------
       */
@@ -5420,7 +5461,7 @@
           try {
 
             const hasil =
-              await requestJsonp(
+              await antrianFoto(() => requestJsonp(
 
                 {
                   action:
@@ -5435,7 +5476,7 @@
 
                 30000
 
-              );
+              ));
 
 
             if (
@@ -5937,9 +5978,7 @@
               produk.nama
             )}"
 
-            onerror="
-              this.src='${FOTO_PLACEHOLDER}';
-            "
+            onerror="fotoGagal(this)"
 
           >
 
@@ -6130,9 +6169,7 @@
                 produk.nama
               )}"
 
-              onerror="
-                this.src='${FOTO_PLACEHOLDER}';
-              "
+              onerror="fotoGagal(this)"
 
             >
 
@@ -8120,7 +8157,7 @@
         renderKeranjang();
 
 
-        loadData();
+        muatAwal();
 
       }
     );
@@ -8352,9 +8389,10 @@
       try {
 
         const data =
-          await requestJsonp(
+          await requestJsonpCoba(
             { action: 'getData' },
-            20000
+            20000,
+            paksa ? 3 : 1
           );
 
         if (
@@ -8375,6 +8413,8 @@
         }
 
         tandaDataTerakhir = tanda;
+
+        simpanCacheLokal(data);
 
         const posisiY =
           window.scrollY;
@@ -8411,6 +8451,307 @@
         sedangRefresh = false;
 
       }
+
+    }
+
+
+    /* =====================================================
+       PERFORMA: CACHE DI BROWSER, COBA ULANG, FOTO LANGSUNG
+    ===================================================== */
+
+    const KUNCI_CACHE_LOKAL = 'katalog_cache_v1';
+
+    const UMUR_CACHE_LOKAL_MS = 24 * 60 * 60 * 1000;
+
+
+    /* Simpan data terakhir di browser agar buka berikutnya instan */
+
+    function simpanCacheLokal(data) {
+
+      try {
+
+        const teks =
+          JSON.stringify({
+            t: Date.now(),
+            data: data
+          });
+
+        if (teks.length > 2000000) {
+          return;
+        }
+
+        localStorage.setItem(
+          KUNCI_CACHE_LOKAL,
+          teks
+        );
+
+      } catch (error) {
+        /* penyimpanan penuh / diblokir: abaikan */
+      }
+
+    }
+
+
+    function bacaCacheLokal() {
+
+      try {
+
+        const mentah =
+          localStorage.getItem(
+            KUNCI_CACHE_LOKAL
+          );
+
+        if (!mentah) {
+          return null;
+        }
+
+        const obj =
+          JSON.parse(mentah);
+
+        if (
+          !obj ||
+          !obj.data ||
+          Date.now() - obj.t > UMUR_CACHE_LOKAL_MS
+        ) {
+          return null;
+        }
+
+        const daftar =
+          obj.data.produk ??
+          obj.data.products ??
+          obj.data.PRODUK;
+
+        if (
+          !Array.isArray(daftar) ||
+          daftar.length === 0
+        ) {
+          return null;
+        }
+
+        return obj;
+
+      } catch (error) {
+
+        return null;
+
+      }
+
+    }
+
+
+    /* Buka katalog: tampilkan data tersimpan dulu, perbarui di latar belakang */
+
+    function muatAwal() {
+
+      const cache =
+        bacaCacheLokal();
+
+      if (cache) {
+
+        try {
+
+          prosesDataServer(cache.data);
+
+          tandaDataTerakhir =
+            hitungTandaData(cache.data);
+
+          tampilkanLoading(false);
+
+          muatUlangSenyap(true);
+
+          return;
+
+        } catch (error) {
+
+          console.warn(
+            'Cache lokal tidak dapat dipakai:',
+            error
+          );
+
+        }
+
+      }
+
+      loadData();
+
+    }
+
+
+    /* JSONP dengan coba ulang otomatis */
+
+    async function requestJsonpCoba(
+      params,
+      timeoutMs,
+      percobaan
+    ) {
+
+      let hasil;
+
+      let galat;
+
+      for (let i = 0; i < percobaan; i++) {
+
+        try {
+
+          hasil =
+            await requestJsonp(
+              params,
+              timeoutMs
+            );
+
+          galat = null;
+
+          if (
+            !hasil ||
+            hasil.ok !== false ||
+            i === percobaan - 1
+          ) {
+            return hasil;
+          }
+
+        } catch (error) {
+
+          galat = error;
+
+        }
+
+        if (i < percobaan - 1) {
+
+          await new Promise(
+            resolve =>
+              setTimeout(
+                resolve,
+                1500 * (i + 1)
+              )
+          );
+
+        }
+
+      }
+
+      throw galat;
+
+    }
+
+
+    /* Foto: pakai URL Google Drive langsung bila ID file tersedia.
+       Jika gagal (folder belum dibagikan), otomatis kembali ke getPhoto. */
+
+    let driveLangsungMati = false;
+
+    const fotoLangsungGagal = new Set();
+
+
+    function fotoDriveLangsungBisa(produk) {
+
+      return !!(
+        produk &&
+        produk.fotoId &&
+        !driveLangsungMati &&
+        !fotoLangsungGagal.has(String(produk.id))
+      );
+
+    }
+
+
+    function urlDriveLangsung(fotoId) {
+
+      return (
+        'https://drive.google.com/thumbnail?id=' +
+        encodeURIComponent(fotoId) +
+        '&sz=w640'
+      );
+
+    }
+
+
+    function fotoGagal(img) {
+
+      const id =
+        String(
+          img.dataset.fotoId ||
+          img.dataset.detailFotoId ||
+          ''
+        );
+
+      const produk =
+        semuaProduk.find(
+          p => String(p.id) === id
+        );
+
+      if (
+        produk &&
+        produk.fotoId &&
+        !fotoLangsungGagal.has(id) &&
+        String(img.src).indexOf('drive.google.com') !== -1
+      ) {
+
+        fotoLangsungGagal.add(id);
+
+        /* Beberapa kegagalan berturut-turut: folder kemungkinan belum publik */
+        if (fotoLangsungGagal.size >= 3) {
+          driveLangsungMati = true;
+        }
+
+        img.src = FOTO_PLACEHOLDER;
+
+        muatFotoProduk(produk);
+
+        return;
+
+      }
+
+      img.onerror = null;
+
+      img.src = FOTO_PLACEHOLDER;
+
+    }
+
+
+    /* Batasi permintaan getPhoto agar server tidak kewalahan */
+
+    let fotoAktif = 0;
+
+    const antrianFotoDaftar = [];
+
+
+    function antrianFoto(tugas) {
+
+      return new Promise(
+        (resolve, reject) => {
+
+          const jalan =
+            () => {
+
+              fotoAktif++;
+
+              tugas()
+                .then(resolve, reject)
+                .finally(
+                  () => {
+
+                    fotoAktif--;
+
+                    const berikut =
+                      antrianFotoDaftar.shift();
+
+                    if (berikut) {
+                      berikut();
+                    }
+
+                  }
+                );
+
+            };
+
+          if (fotoAktif < 3) {
+            jalan();
+          } else {
+            antrianFotoDaftar.push(jalan);
+          }
+
+        }
+      );
 
     }
 
