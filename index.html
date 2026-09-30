@@ -3531,6 +3531,135 @@
         box-shadow: none;
       }
     }
+
+    /* =====================================================
+       BAR BELI DI HALAMAN DETAIL (gaya marketplace, khusus HP)
+    ===================================================== */
+    .detailBar { display: none; }
+    @media (max-width: 760px) {
+      /* halaman detail memenuhi layar */
+      #detailModal { padding: 0; align-items: stretch; }
+      #detailModal .modalCard {
+        width: 100%;
+        max-height: none;
+        height: 100%;
+        border: 0;
+        border-radius: 0;
+      }
+      #detailModal .modalHeader {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+        padding: 10px 14px;
+        background: var(--bg2);
+      }
+      #detailModal .modalHeader h3 { font-size: 16px; }
+      #detailModal .modalContent {
+        padding: 0 0 calc(96px + env(safe-area-inset-bottom, 0px));
+      }
+      #detailModal .detailGrid { gap: 0; }
+      #detailModal .detailImage {
+        display: block;
+        width: 100%;
+        min-height: 0;
+        aspect-ratio: 1 / 1;
+        border-radius: 0;
+        object-fit: cover;
+      }
+      #detailModal .detailGrid > div:last-child { padding: 14px 16px 6px; }
+      #detailModal .detailPrice {
+        color: #ff5a36;
+        font-size: 26px;
+        letter-spacing: -0.3px;
+      }
+      #detailModal .detailTitle { font-size: 18px; line-height: 1.35; }
+      /* tombol lama di dalam detail diganti bar bawah */
+      #detailModal .detailActions { display: none; }
+
+      .detailBar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 5100;
+        display: flex;
+        align-items: stretch;
+        gap: 10px;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid var(--border);
+        background: var(--bg2);
+        box-shadow: 0 -6px 20px rgba(0,0,0,0.35);
+      }
+      .detailBar .barIcon {
+        position: relative;
+        display: flex;
+        flex: 0 0 56px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #ff7a45;
+        font-size: 10.5px;
+        font-weight: 700;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .detailBar .barIcon svg { width: 26px; height: 26px; }
+      .detailBar .barIcon:active:not(:disabled) { transform: scale(0.92); }
+      .detailBar .barIcon:disabled { opacity: 0.4; }
+      .detailBar .barDivider {
+        flex: 0 0 1px;
+        margin: 6px 0;
+        background: var(--border);
+      }
+      .detailBar .barBadge {
+        position: absolute;
+        top: -3px;
+        right: 6px;
+        min-width: 17px;
+        height: 17px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #ee4d2d;
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        line-height: 17px;
+        text-align: center;
+      }
+      .detailBar .barBuy {
+        display: flex;
+        flex: 1 1 auto;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 52px;
+        padding: 6px 10px;
+        border: 0;
+        border-radius: 12px;
+        background: linear-gradient(180deg, #ff7a45, #ee4d2d);
+        color: #fff;
+        box-shadow: 0 6px 16px rgba(238,77,45,0.4);
+        -webkit-tap-highlight-color: transparent;
+      }
+      .detailBar .barBuy span { font-size: 13px; font-weight: 700; opacity: 0.95; }
+      .detailBar .barBuy b { font-size: 17px; font-weight: 900; line-height: 1.15; }
+      .detailBar .barBuy:active:not(:disabled) { transform: scale(0.97); }
+      .detailBar .barBuy:disabled {
+        background: #34445b;
+        box-shadow: none;
+        color: #9fb0c7;
+      }
+      .detailBar .barIcon.added { color: var(--green); }
+
+      /* kartu produk: tombol selalu sejajar di bawah */
+      .productCard { display: flex; flex-direction: column; }
+      .productCard .productBody { display: flex; flex: 1 1 auto; flex-direction: column; }
+      .productCard .productButtons { margin-top: auto; padding-top: 10px; }
+    }
+
     /* ===== Skeleton: kartu kosong tampil instan saat data dimuat ===== */
     .skelCard { pointer-events: none; animation: skelPulse 1.3s ease-in-out infinite; }
     .skelImg { height: 210px; background: #0a1422; }
@@ -6903,9 +7032,29 @@
 
         </div>
 
+        <div class="detailBar">
+          <button type="button" class="barIcon" aria-label="Chat penjual"
+            onclick="chatProduk('${escapeJs(produk.id)}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5c0 4.14-4.03 7.5-9 7.5-1.1 0-2.15-.16-3.12-.46L4 20l1.3-3.9C3.85 14.8 3 13.25 3 11.5 3 7.36 7.03 4 12 4s9 3.36 9 7.5Z"/><circle cx="8.5" cy="11.5" r=".9" fill="currentColor"/><circle cx="12" cy="11.5" r=".9" fill="currentColor"/><circle cx="15.5" cy="11.5" r=".9" fill="currentColor"/></svg>
+            <span>Chat</span>
+          </button>
+          <div class="barDivider"></div>
+          <button type="button" class="barIcon" id="barKeranjang" aria-label="Tambah ke keranjang"
+            ${stokAda ? '' : 'disabled'}
+            onclick="tambahDariBar('${escapeJs(produk.id)}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3h1.5l1.7 11.2c.15 1 1 1.8 2 1.8h9.7c1 0 1.85-.8 2-1.8L21 6H6"/><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M13 7v5M10.5 9.5h5"/></svg>
+            <span>Keranjang</span>
+            <b class="barBadge ${jumlahBarangKeranjang() > 0 ? '' : 'hidden'}" id="barBadge">${jumlahBarangKeranjang()}</b>
+          </button>
+          <button type="button" class="barBuy"
+            ${stokAda ? '' : 'disabled'}
+            onclick="beliSekarang('${escapeJs(produk.id)}')">
+            ${stokAda
+              ? '<span>Beli Sekarang</span><b>' + formatRupiah(produk.harga) + '</b>'
+              : '<span>Stok habis</span>'}
+          </button>
+        </div>
       `;
-
-
       bukaModal(
         'detailModal'
       );
@@ -6936,6 +7085,40 @@
 
     }
 
+
+    /* Chat penjual lewat WhatsApp dari halaman detail produk */
+    function chatProduk(id) {
+      const produk = semuaProduk.find(item => String(item.id) === String(id));
+      const nomor = normalisasiNomorWhatsapp(pengaturan.WHATSAPP);
+      if (!nomor) {
+        tampilkanToast('Nomor WhatsApp belum tersedia.', 'error');
+        return;
+      }
+      const pesan = produk
+        ? 'Halo admin, saya tertarik dengan produk ini:\n' +
+          produk.nama + '\n' +
+          'Harga: ' + formatRupiah(produk.harga) + '\n' +
+          'Apakah masih tersedia?'
+        : 'Halo admin, saya ingin bertanya tentang produk CCTV.';
+      bukaWhatsApp(nomor, encodeURIComponent(pesan));
+    }
+
+    /* Tambah ke keranjang tanpa menutup halaman detail */
+    function tambahDariBar(id) {
+      const sebelum = jumlahBarangKeranjang();
+      tambahKeKeranjang(id);
+      const sesudah = jumlahBarangKeranjang();
+      const badge = document.getElementById('barBadge');
+      if (badge) {
+        badge.textContent = sesudah > 99 ? '99+' : sesudah;
+        badge.classList.toggle('hidden', sesudah <= 0);
+      }
+      const tombol = document.getElementById('barKeranjang');
+      if (tombol && sesudah > sebelum) {
+        tombol.classList.add('added');
+        setTimeout(() => tombol.classList.remove('added'), 900);
+      }
+    }
 
     /* =====================================================
        TAMBAH KE KERANJANG
