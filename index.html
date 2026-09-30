@@ -916,6 +916,40 @@
       white-space: pre-line;
     }
 
+    .detailSpec {
+      white-space: normal;
+    }
+
+    .detailSpec .specTable {
+      width: 100%;
+      margin-top: 8px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .detailSpec .specTable td {
+      padding: 7px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+
+    .detailSpec .specTable td.specLabel {
+      width: 38%;
+      color: var(--text);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .detailSpec .specTable td.specNote {
+      color: var(--muted);
+    }
+
+    .detailSpec .specText {
+      margin-top: 8px;
+      white-space: pre-line;
+    }
+
     .detailActions {
 
       display: flex;
@@ -3458,6 +3492,41 @@
       font-size: 13px;
     }
 
+
+    /* ===== PERFORMA HP ===== */
+    .productCard {
+      content-visibility: auto;
+      contain-intrinsic-size: auto 340px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+    .muatLagiWrap {
+      display: flex;
+      justify-content: center;
+      padding: 20px 0 8px;
+    }
+    .muatLagiBtn {
+      padding: 12px 22px;
+      border: 1px solid rgba(255,210,26,0.55);
+      border-radius: 999px;
+      background: transparent;
+      color: var(--gold);
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    @media (max-width: 900px) {
+      .header, header, .bottomNav {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+      }
+      .productCard {
+        box-shadow: none;
+      }
+      .productCard:hover {
+        transform: none;
+        box-shadow: none;
+      }
+    }
   </style>
 
 </head>
@@ -4448,6 +4517,9 @@
        - foto detail produk
        ===================================================== */
 
+    function naikkanResolusiDetail(u) {
+      return String(u || '').replace('sz=w400', 'sz=w800');
+    }
     function tampilkanFotoPadaElemen(
       id,
       foto
@@ -4482,8 +4554,7 @@
         .forEach(
           img => {
 
-            img.src =
-              foto;
+            img.src = img.hasAttribute('data-detail-foto-id') ? naikkanResolusiDetail(foto) : foto;
 
           }
         );
@@ -4561,6 +4632,37 @@
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
 
+    }
+
+    /* Ubah teks spesifikasi "Label : isi" (satu baris per item) menjadi tabel rapi.
+       Jika tidak ada format "Label : isi", tampil sebagai teks biasa. */
+    function formatSpesifikasi(value) {
+
+      const baris = String(value ?? '')
+        .split(/\r?\n/)
+        .map(function (b) { return b.trim(); })
+        .filter(Boolean);
+
+      if (!baris.length) return '';
+
+      const adaLabel = baris.filter(function (b) {
+        return /^[^:]{1,40}:\s*\S/.test(b);
+      }).length;
+
+      if (adaLabel < 2) {
+        return '<div class="specText">' + escapeHtml(baris.join('\n')) + '</div>';
+      }
+
+      const rows = baris.map(function (b) {
+        const m = b.match(/^([^:]{1,40}):\s*(.*)$/);
+        if (m && m[2]) {
+          return '<tr><td class="specLabel">' + escapeHtml(m[1].trim()) +
+                 '</td><td>' + escapeHtml(m[2].trim()) + '</td></tr>';
+        }
+        return '<tr><td class="specNote" colspan="2">' + escapeHtml(b) + '</td></tr>';
+      }).join('');
+
+      return '<table class="specTable"><tbody>' + rows + '</tbody></table>';
     }
 
 
@@ -5539,92 +5641,106 @@
        - foto dimuat saat dekat layar
     ===================================================== */
 
-    function renderProduk() {
+    let jumlahTampil = 0;
+    let kunciFilterRender = '';
 
-      const grid =
-        document.getElementById(
-          'productGrid'
-        );
-
-
-      const empty =
-        document.getElementById(
-          'emptyState'
-        );
-
-
-      document.getElementById(
-        'productInfo'
-      ).textContent =
-
-        produkTampil.length +
-        ' produk ditampilkan';
-
-
-      /*
-        Matikan observer lama sebelum
-        grid diganti.
-      */
-
-      if (
-        observerFotoProduk
-      ) {
-
-        observerFotoProduk.disconnect();
-
-        observerFotoProduk = null;
-
-      }
-
-
-      grid.innerHTML = '';
-
-
-      if (
-        produkTampil.length === 0
-      ) {
-
-        empty.classList.remove(
-          'hidden'
-        );
-
-        return;
-
-      }
-
-
-      empty.classList.add(
-        'hidden'
-      );
-
-
-      produkTampil.forEach(
-        (
-          produk,
-          index
-        ) => {
-
-          grid.insertAdjacentHTML(
-            'beforeend',
-            templateProduk(
-              produk,
-              index
-            )
-          );
-
-        }
-      );
-
-
-      /*
-        Setelah kartu tampil,
-        pasang observer foto.
-      */
-
-      siapkanObserverFoto();
-
+    function porsiHalaman() {
+      return window.innerWidth <= 700 ? 12 : 24;
     }
 
+    function renderProduk() {
+      const grid = document.getElementById('productGrid');
+      const empty = document.getElementById('emptyState');
+      const total = produkTampil.length;
+
+      /* Filter / urutan / pencarian berubah -> mulai dari halaman pertama.
+         Refresh otomatis (filter sama) -> jumlah yang sudah dibuka dipertahankan. */
+      const kunci = [
+        kategoriAktif,
+        document.getElementById('sortSelect').value,
+        document.getElementById('searchInput').value.trim().toLowerCase()
+      ].join('|');
+
+      if (kunci !== kunciFilterRender) {
+        kunciFilterRender = kunci;
+        jumlahTampil = porsiHalaman();
+      }
+      if (jumlahTampil < porsiHalaman()) {
+        jumlahTampil = porsiHalaman();
+      }
+
+      if (observerFotoProduk) {
+        observerFotoProduk.disconnect();
+        observerFotoProduk = null;
+      }
+
+      grid.innerHTML = '';
+      hapusTombolMuatLagi();
+
+      if (total === 0) {
+        document.getElementById('productInfo').textContent = '0 produk ditampilkan';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      const batas = Math.min(jumlahTampil, total);
+
+      /* Satu kali innerHTML: browser hanya menghitung layout sekali */
+      let html = '';
+      for (let i = 0; i < batas; i++) {
+        html += templateProduk(produkTampil[i], i);
+      }
+      grid.innerHTML = html;
+
+      perbaruiInfoDanTombol();
+      siapkanObserverFoto();
+    }
+
+    function perbaruiInfoDanTombol() {
+      const total = produkTampil.length;
+      const batas = Math.min(jumlahTampil, total);
+
+      document.getElementById('productInfo').textContent =
+        batas < total
+          ? batas + ' dari ' + total + ' produk ditampilkan'
+          : total + ' produk ditampilkan';
+
+      hapusTombolMuatLagi();
+
+      if (batas < total) {
+        const grid = document.getElementById('productGrid');
+        const wrap = document.createElement('div');
+        wrap.id = 'muatLagiWrap';
+        wrap.className = 'muatLagiWrap';
+        wrap.innerHTML =
+          '<button type="button" class="muatLagiBtn" onclick="muatLebihBanyak()">' +
+          'Tampilkan lebih banyak (' + (total - batas) + ' lagi)' +
+          '</button>';
+        grid.insertAdjacentElement('afterend', wrap);
+      }
+    }
+
+    function hapusTombolMuatLagi() {
+      const lama = document.getElementById('muatLagiWrap');
+      if (lama) lama.remove();
+    }
+
+    function muatLebihBanyak() {
+      const grid = document.getElementById('productGrid');
+      const mulai = grid.children.length;
+      jumlahTampil = mulai + porsiHalaman();
+      const batas = Math.min(jumlahTampil, produkTampil.length);
+
+      let html = '';
+      for (let i = mulai; i < batas; i++) {
+        html += templateProduk(produkTampil[i], i);
+      }
+      grid.insertAdjacentHTML('beforeend', html);
+
+      perbaruiInfoDanTombol();
+      siapkanObserverFoto();
+    }
 
     /* =====================================================
        SIAPKAN OBSERVER FOTO
@@ -5638,7 +5754,7 @@
 
       const gambar =
         document.querySelectorAll(
-          '.productImage[data-foto-id]'
+          '.productImage[data-foto-id]:not([data-obs])'
         );
 
 
@@ -5649,6 +5765,7 @@
         return;
 
       }
+      gambar.forEach(img => img.setAttribute('data-obs', '1'));
 
 
       /*
@@ -5680,9 +5797,7 @@
 
             if (produk) {
 
-              muatFotoProduk(
-                produk
-              );
+              muatFotoProduk(produk, true);
 
             }
 
@@ -5695,7 +5810,7 @@
       }
 
 
-      observerFotoProduk =
+      observerFotoProduk = observerFotoProduk ||
         new IntersectionObserver(
 
           entries => {
@@ -5737,9 +5852,7 @@
 
                 if (produk) {
 
-                  muatFotoProduk(
-                    produk
-                  );
+                  muatFotoProduk(produk, true);
 
                 }
 
@@ -5785,7 +5898,8 @@
     ===================================================== */
 
     async function muatFotoProduk(
-      produk
+      produk,
+      kecil
     ) {
 
       const id =
@@ -5929,7 +6043,9 @@
                     id,
 
                   foto:
-                    produk.foto || ''
+                    produk.foto || '',
+                  kecil:
+                    kecil ? '1' : ''
                 },
 
                 30000
@@ -6620,7 +6736,7 @@
               )}"
 
               src="${escapeHtml(
-                foto
+                naikkanResolusiDetail(foto)
               )}"
 
               alt="${escapeHtml(
@@ -6701,7 +6817,7 @@
 
             ${
               produk.spesifikasi
-                ? `<div class="detailSpec"><strong>Spesifikasi</strong><br>${escapeHtml(
+                ? `<div class="detailSpec"><strong>Spesifikasi</strong>${formatSpesifikasi(
                     produk.spesifikasi
                   )}</div>`
                 : ''
@@ -8764,7 +8880,7 @@
        Ubah angka di bawah untuk mengatur selang waktu.
     ===================================================== */
 
-    const INTERVAL_REFRESH_DETIK = 30;
+    const INTERVAL_REFRESH_DETIK = 60;
 
     let tandaDataTerakhir = null;
 
@@ -9117,7 +9233,7 @@
       return (
         'https://drive.google.com/thumbnail?id=' +
         encodeURIComponent(fotoId) +
-        '&sz=w640'
+        '&sz=w400'
       );
 
     }
@@ -9337,7 +9453,7 @@
         </div>
         <label class="admField">
           <span>Spesifikasi</span>
-          <textarea id="admSpesifikasi" rows="4" maxlength="2000" placeholder="Contoh: 2MP, Full Color, IP66, lensa 3.6mm"></textarea>
+          <textarea id="admSpesifikasi" rows="8" maxlength="2000" placeholder="Satu baris per item, format Label : isi&#10;Contoh:&#10;Resolusi : 2 MP / Full HD&#10;Lensa : 2.8 mm&#10;Night Vision : 20 meter"></textarea>
         </label>
         <label class="admField">
           <span>Deskripsi</span>
