@@ -9430,7 +9430,7 @@
 
       <div id="admViewOrders" class="admBody hidden">
         <div class="admTools">
-          <input id="admCariPesanan" type="search" placeholder="Cari nama, no. pesanan, WhatsApp..." oninput="admRenderPesanan()">
+          <input id="admCariPesanan" type="search" placeholder="Cari nama, no. pesanan, WhatsApp..." oninput="admRenderPesananTunda()">
           <button type="button" class="admBtn" onclick="admMuatPesanan()">Muat ulang</button>
         </div>
         <div class="admTanggal">
@@ -9560,10 +9560,11 @@
 
         let res = null;
         let waktuHabis = false;
-        const pakaiBatas = action === 'adminLogin' || AKSI_BACA.indexOf(action) !== -1;
+        const pakaiBatas = action === 'adminLogin' || action === 'adminSaveProduct' || AKSI_BACA.indexOf(action) !== -1;
+        const batasMs = action === 'adminSaveProduct' ? 60000 : BATAS_WAKTU_MS;
         const kontrol = pakaiBatas && typeof AbortController !== 'undefined' ? new AbortController() : null;
         const timer = kontrol
-          ? setTimeout(function () { waktuHabis = true; kontrol.abort(); }, BATAS_WAKTU_MS)
+          ? setTimeout(function () { waktuHabis = true; kontrol.abort(); }, batasMs)
           : null;
 
         try {
@@ -9601,6 +9602,29 @@
         return prosesBalasan(json);
       }
 
+      /* Kirim ulang otomatis sekali bila sinyal putus. Aman untuk simpan produk
+         karena server mengenali reqId yang sama dan tidak menulis dua kali. */
+      async function kirimUlang(action, data) {
+        try {
+          return await kirim(action, data);
+        } catch (e) {
+          if (/^(Server menolak|Tidak bisa terhubung|Server terlalu lama)/.test(e.message)) {
+            await new Promise(function (r) { setTimeout(r, 1500); });
+            return await kirim(action, data);
+          }
+          throw e;
+        }
+      }
+      function reqIdBaru() {
+        return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+      }
+      /* Bangunkan server Apps Script selagi admin mengetik username/password */
+      let waktuHangat = 0;
+      function hangatkanServer() {
+        if (Date.now() - waktuHangat < 120000) return;
+        waktuHangat = Date.now();
+        try { requestJsonp({ action: 'health' }, 25000).catch(function () {}); } catch (e) {}
+      }
       function hapusToken() {
         token = '';
         try { sessionStorage.removeItem(KUNCI_TOKEN); } catch (e) {}
@@ -9609,6 +9633,7 @@
       /* ---------- Login ---------- */
 
       window.admBukaPengaturan = function () {
+        hangatkanServer();
         if (token) {
           bukaPanel();
           return;
@@ -9668,6 +9693,7 @@
 
       window.admKeluar = function () {
         hapusToken();
+        pesananDaftar = []; pesananSudahAda = false;
         $('admPanelOverlay').classList.add('hidden');
         toast('Anda sudah keluar dari pengaturan.', 'success');
       };
@@ -9686,6 +9712,7 @@
           const hasil = await kirim('adminList', {});
           daftar = (hasil.produk || []).map(function (x) { const pr = normalisasiProduk(x); pr.row = x._ROW || 0; pr.tab = x._TAB || ''; return pr; }); admIsiKategori();
           admRenderList();
+          admMuatPesanan(true);
         } catch (err) {
           $('admList').innerHTML = '';
           if (token) toast(err.message, 'error');
@@ -9777,20 +9804,33 @@
         }
       };
 
-      window.admMuatPesanan = async function () {
-        $('admPesananList').innerHTML =
-          '<p style="color:var(--muted)">Memuat pesanan... (jika server baru bangun, bisa sampai 10-20 detik)</p>';
+      let pesananSudahAda = false;
+      let pesananSedangMuat = false;
+      window.admMuatPesanan = async function (senyap) {
+        if (senyap && pesananSedangMuat) return;
+        pesananSedangMuat = true;
+        if (!senyap && !pesananSudahAda) {
+          $('admPesananList').innerHTML =
+            '<p style="color:var(--muted)">Memuat pesanan... (jika server baru bangun, bisa sampai 10-20 detik)</p>';
+        }
         try {
           const hasil = await kirim('adminOrders', {});
           pesananDaftar = hasil.pesanan || [];
           pesananJumlah = hasil.jumlah || pesananDaftar.length;
           pesananAdaStatus = hasil.adaStatus !== false;
+          pesananSudahAda = true;
           admIsiTahun();
           admRenderPesanan();
         } catch (err) {
-          $('admPesananList').innerHTML = '';
-          $('admRingkas').innerHTML = '';
-          if (token) toast(err.message, 'error');
+          if (!senyap) {
+            if (!pesananSudahAda) {
+              $('admPesananList').innerHTML = '';
+              $('admRingkas').innerHTML = '';
+            }
+            if (token) toast(err.message, 'error');
+          }
+        } finally {
+          pesananSedangMuat = false;
         }
       };
 
@@ -9830,6 +9870,17 @@
         admRenderPesanan();
       };
 
+      let batasPesanan = 50;
+      let kunciFilterPesanan = '';
+      let tundaCariPesanan = null;
+      window.admLebihBanyakPesanan = function () {
+        batasPesanan += 50;
+        admRenderPesanan();
+      };
+      window.admRenderPesananTunda = function () {
+        clearTimeout(tundaCariPesanan);
+        tundaCariPesanan = setTimeout(admRenderPesanan, 250);
+      };
       window.admRenderPesanan = function () {
         const q = $('admCariPesanan').value.trim().toLowerCase();
 
@@ -9871,6 +9922,12 @@
             String(p.ITEM || '').toLowerCase().includes(q))
         );
 
+        const kunciFilter = [q, filterStatus, fTanggal, fBulan, fTahun].join('|');
+        if (kunciFilter !== kunciFilterPesanan) {
+          kunciFilterPesanan = kunciFilter;
+          batasPesanan = 50;
+        }
+        const tampilBatas = tampil.slice(0, batasPesanan);
         const nilaiTampil = tampil.reduce((s, p) => s + (Number(p.TOTAL) || 0), 0);
         $('admHasilInfo').textContent = pesananDaftar.length
           ? 'Menampilkan ' + tampil.length + ' pesanan · Total ' + formatRupiah(nilaiTampil)
@@ -9888,7 +9945,7 @@
           return;
         }
 
-        $('admPesananList').innerHTML = catatanSetup + tampil.map(p => {
+        $('admPesananList').innerHTML = catatanSetup + tampilBatas.map(p => {
           const wa = admNomorWa(p.WHATSAPP);
           const sudah = p.STATUS === STATUS_SUDAH;
           return `
@@ -9909,7 +9966,9 @@
                   onclick="admUbahStatus('${escapeHtml(p.NO_PESANAN)}')">${sudah ? 'Tandai belum diproses' : 'Tandai sudah diproses'}</button>` : ''}
               </div>
             </div>`;
-        }).join('');
+        }).join('') + (tampil.length > batasPesanan
+          ? '<div style="text-align:center;padding:14px 0"><button type="button" class="admBtn" onclick="admLebihBanyakPesanan()">Tampilkan lebih banyak (' + (tampil.length - batasPesanan) + ' lagi)</button></div>'
+          : '');
       };
 
       window.admUbahStatus = async function (no) {
@@ -10038,7 +10097,8 @@
         $('admFormError').textContent = '';
 
         try {
-          const hasilSimpan = await kirim('adminSaveProduct', {
+          const hasilSimpan = await kirimUlang('adminSaveProduct', {
+            reqId: reqIdBaru(),
             id: editId, row: editRow, tab: editTab,
             nama: nama,
             kategori: kategori,
@@ -10049,14 +10109,23 @@
             fotoBase64: fotoBaru
           });
           toast('Produk berhasil disimpan.' + (hasilSimpan && hasilSimpan.catatan ? ' ' + hasilSimpan.catatan : ''), 'success');
-          await bukaPanel();
+          terapkanKeDaftar(hasilSimpan, {
+            nama: nama, kategori: kategori, harga: harga, stok: stok,
+            spesifikasi: $('admSpesifikasi').value.trim(),
+            deskripsi: $('admDeskripsi').value.trim()
+          });
+          admKeList();
+          admRenderList();
+          muatDaftarSenyap();
           segarkanKatalog(hasilSimpan, {
             nama: nama, kategori: kategori, harga: harga, stok: stok,
             spesifikasi: $('admSpesifikasi').value.trim(),
             deskripsi: $('admDeskripsi').value.trim()
           });
         } catch (err) {
-          galat(err.message);
+          galat(/^(Tidak bisa terhubung|Server terlalu lama)/.test(err.message)
+            ? err.message + ' Perubahan mungkin sudah tersimpan: cek daftar produk dulu sebelum menyimpan ulang.'
+            : err.message);
         } finally {
           sedangKirim = false;
           btn.disabled = false;
@@ -10064,6 +10133,40 @@
         }
       };
 
+      /* Perbarui daftar admin langsung di layar (tanpa menunggu server) */
+      function terapkanKeDaftar(hasil, p) {
+        const id = String((hasil && hasil.id) || editId || '');
+        if (!id) return;
+        let item = daftar.find(function (x) { return String(x.id) === id; });
+        if (item) {
+          item.nama = p.nama;
+          item.harga = p.harga;
+          item.stok = p.stok;
+          item.spesifikasi = p.spesifikasi || '';
+          item.deskripsi = p.deskripsi || '';
+          if (hasil && hasil.foto) item.foto = hasil.foto;
+          if (hasil && hasil.baris) item.row = hasil.baris;
+        } else {
+          item = normalisasiProduk({
+            ID: id, KATEGORI: (hasil && hasil.kategori) || p.kategori, NAMA_PRODUK: p.nama,
+            HARGA: p.harga, STOK: p.stok, FOTO: (hasil && hasil.foto) || '', TERJUAL: 0,
+            SPESIFIKASI: p.spesifikasi || '', DESKRIPSI: p.deskripsi || ''
+          });
+          item.row = 0;
+          item.tab = (hasil && hasil.kategori) || p.kategori;
+          daftar.push(item);
+        }
+        admIsiKategori();
+      }
+      /* Ambil daftar terbaru dari server di latar belakang */
+      async function muatDaftarSenyap() {
+        try {
+          const hasil = await kirim('adminList', {});
+          daftar = (hasil.produk || []).map(function (x) { const pr = normalisasiProduk(x); pr.row = x._ROW || 0; pr.tab = x._TAB || ''; return pr; });
+          admIsiKategori();
+          if (!$('admViewList').classList.contains('hidden')) admRenderList();
+        } catch (e) { /* daftar di layar sudah diperbarui, abaikan */ }
+      }
       /* Terapkan perubahan langsung ke katalog di halaman ini */
       function segarkanKatalog(hasil, p) {
         const id = String((hasil && hasil.id) || editId || '');
