@@ -9625,9 +9625,26 @@
         waktuHangat = Date.now();
         try { requestJsonp({ action: 'health' }, 25000).catch(function () {}); } catch (e) {}
       }
+      /* Simpan hasil terakhir selama tab terbuka (sessionStorage), agar panel langsung
+         terisi lalu diperbarui di latar belakang. Dihapus saat keluar / sesi habis. */
+      const KUNCI_SESI_DAFTAR = 'hensdaAdmDaftar';
+      const KUNCI_SESI_PESANAN = 'hensdaAdmPesanan';
+      function simpanSesi(kunci, nilai) {
+        try { sessionStorage.setItem(kunci, JSON.stringify(nilai)); } catch (e) {}
+      }
+      function bacaSesi(kunci) {
+        try {
+          const t = sessionStorage.getItem(kunci);
+          return t ? JSON.parse(t) : null;
+        } catch (e) { return null; }
+      }
       function hapusToken() {
         token = '';
-        try { sessionStorage.removeItem(KUNCI_TOKEN); } catch (e) {}
+        try {
+          sessionStorage.removeItem(KUNCI_TOKEN);
+          sessionStorage.removeItem(KUNCI_SESI_DAFTAR);
+          sessionStorage.removeItem(KUNCI_SESI_PESANAN);
+        } catch (e) {}
       }
 
       /* ---------- Login ---------- */
@@ -9704,17 +9721,34 @@
 
       /* ---------- Daftar produk ---------- */
 
+      function petaDaftar(arr) {
+        return (arr || []).map(function (x) {
+          const pr = normalisasiProduk(x);
+          pr.row = x._ROW || 0;
+          pr.tab = x._TAB || '';
+          return pr;
+        });
+      }
       async function bukaPanel() {
         $('admPanelOverlay').classList.remove('hidden');
         admKeList();
-        $('admList').innerHTML = '<p style="color:var(--muted)">Memuat produk... (jika server baru bangun, bisa sampai 10-20 detik)</p>';
+        const tersimpan = bacaSesi(KUNCI_SESI_DAFTAR);
+        if (tersimpan && tersimpan.length) {
+          daftar = petaDaftar(tersimpan);
+          admIsiKategori();
+          admRenderList();
+        } else {
+          $('admList').innerHTML = '<p style="color:var(--muted)">Memuat produk... (jika server baru bangun, bisa sampai 10-20 detik)</p>';
+        }
         try {
           const hasil = await kirim('adminList', {});
-          daftar = (hasil.produk || []).map(function (x) { const pr = normalisasiProduk(x); pr.row = x._ROW || 0; pr.tab = x._TAB || ''; return pr; }); admIsiKategori();
+          simpanSesi(KUNCI_SESI_DAFTAR, hasil.produk || []);
+          daftar = petaDaftar(hasil.produk);
+          admIsiKategori();
           admRenderList();
           admMuatPesanan(true);
         } catch (err) {
-          $('admList').innerHTML = '';
+          if (!daftar.length) $('admList').innerHTML = '';
           if (token) toast(err.message, 'error');
         }
       }
@@ -9806,21 +9840,38 @@
 
       let pesananSudahAda = false;
       let pesananSedangMuat = false;
+      function terapkanPesanan(hasil) {
+        pesananDaftar = hasil.pesanan || [];
+        pesananJumlah = hasil.jumlah || pesananDaftar.length;
+        pesananAdaStatus = hasil.adaStatus !== false;
+        pesananSudahAda = true;
+        admIsiTahun();
+        admRenderPesanan();
+      }
+      function simpanPesananSesi() {
+        simpanSesi(KUNCI_SESI_PESANAN, {
+          pesanan: pesananDaftar.slice(0, 300),
+          jumlah: pesananJumlah,
+          adaStatus: pesananAdaStatus
+        });
+      }
       window.admMuatPesanan = async function (senyap) {
         if (senyap && pesananSedangMuat) return;
         pesananSedangMuat = true;
+        if (!pesananSudahAda) {
+          const tersimpan = bacaSesi(KUNCI_SESI_PESANAN);
+          if (tersimpan && tersimpan.pesanan && tersimpan.pesanan.length) {
+            terapkanPesanan(tersimpan);
+          }
+        }
         if (!senyap && !pesananSudahAda) {
           $('admPesananList').innerHTML =
             '<p style="color:var(--muted)">Memuat pesanan... (jika server baru bangun, bisa sampai 10-20 detik)</p>';
         }
         try {
           const hasil = await kirim('adminOrders', {});
-          pesananDaftar = hasil.pesanan || [];
-          pesananJumlah = hasil.jumlah || pesananDaftar.length;
-          pesananAdaStatus = hasil.adaStatus !== false;
-          pesananSudahAda = true;
-          admIsiTahun();
-          admRenderPesanan();
+          terapkanPesanan(hasil);
+          simpanPesananSesi();
         } catch (err) {
           if (!senyap) {
             if (!pesananSudahAda) {
@@ -9992,6 +10043,7 @@
             }
           }
           p.STATUS = target;
+          simpanPesananSesi();
           admRenderPesanan();
           toast(target === STATUS_SUDAH ? 'Pesanan ditandai sudah diproses.' : 'Pesanan ditandai belum diproses.', 'success');
         } catch (err) {
@@ -10162,7 +10214,8 @@
       async function muatDaftarSenyap() {
         try {
           const hasil = await kirim('adminList', {});
-          daftar = (hasil.produk || []).map(function (x) { const pr = normalisasiProduk(x); pr.row = x._ROW || 0; pr.tab = x._TAB || ''; return pr; });
+          simpanSesi(KUNCI_SESI_DAFTAR, hasil.produk || []);
+          daftar = petaDaftar(hasil.produk);
           admIsiKategori();
           if (!$('admViewList').classList.contains('hidden')) admRenderList();
         } catch (e) { /* daftar di layar sudah diperbarui, abaikan */ }
